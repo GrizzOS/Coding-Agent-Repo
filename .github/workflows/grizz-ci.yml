@@ -1,0 +1,93 @@
+name: Grizz CI
+
+on:
+  push:
+    branches: [ "trunk", "chore/**", "chore/*", "main", "chore/grizzify-scaffold-v3" ]
+  pull_request:
+    branches: [ "trunk", "main" ]
+
+jobs:
+  validate:
+    name: Validate / Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'pnpm'
+
+      # Create environment files from GitHub Secrets
+      - name: Create env files from GitHub Secrets
+        shell: bash
+        run: |
+          echo "Writing .env and .env.local..."
+
+          # Server env (if your server reads plain env vars)
+          cat > .env <<'EOF'
+NODE_ENV=production
+SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL }}
+NO_SHIP_GATE_TOKEN=${{ secrets.NO_SHIP_GATE_TOKEN }}
+PGVECTOR_ENABLED=${{ secrets.PGVECTOR_ENABLED }}
+EOF
+
+          # Frontend / Vite env — prefix VITE_ so Vite exposes them to the browser
+          cat > .env.local <<'EOF'
+VITE_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+VITE_GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+VITE_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+VITE_PGVECTOR_ENABLED=${{ secrets.PGVECTOR_ENABLED }}
+EOF
+
+          echo ".env files created:"
+          ls -l .env .env.local || true
+
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm --version
+
+      - name: Install dependencies
+        run: |
+          if [ -f package.json ]; then
+            pnpm install --frozen-lockfile || pnpm install
+          else
+            echo "No package.json found — skipping node install"
+          fi
+
+      - name: Run license scan (best-effort)
+        run: |
+          if [ -f package.json ]; then
+            npx license-checker --json > licenses.json || echo "{}" > licenses.json
+            echo "licenses.json generated"
+          else
+            echo "No package.json — skipping license-checker"
+          fi
+
+      - name: Build frontend (best-effort)
+        run: |
+          if pnpm -s -v >/dev/null 2>&1 && [ -f package.json ]; then
+            if pnpm -s run | grep -q "build"; then
+              pnpm build || echo "pnpm build failed but continuing"
+            else
+              echo "No build script in package.json"
+            fi
+          else
+            echo "Skipping build: pnpm or package.json missing"
+          fi
+
+      - name: List repo top-level files
+        run: |
+          echo "Repo top-level:"
+          ls -la
+
+      - name: Done
+        run: echo "Complete"

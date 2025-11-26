@@ -1,0 +1,9 @@
+[
+  {
+    "title": "Grizzify scaffold v1",
+    "description": "Add NO_SHIP_GATE, CI, reasoningbank adapter stub",
+    "outcome": "placeholder",
+    "domains": ["governance","ci"],
+    "content": {"notes":"placeholder export for PR artifact"}
+  }
+]

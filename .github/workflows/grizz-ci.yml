@@ -30,21 +30,21 @@ jobs:
 
           # Server env (if your server reads plain env vars)
           cat > .env <<'EOF'
-NODE_ENV=production
-SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
-SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL }}
-NO_SHIP_GATE_TOKEN=${{ secrets.NO_SHIP_GATE_TOKEN }}
-PGVECTOR_ENABLED=${{ secrets.PGVECTOR_ENABLED }}
-EOF
+            NODE_ENV=production
+            SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+            SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+            SUPABASE_DB_URL=${{ secrets.SUPABASE_DB_URL }}
+            NO_SHIP_GATE_TOKEN=${{ secrets.NO_SHIP_GATE_TOKEN }}
+            PGVECTOR_ENABLED=${{ secrets.PGVECTOR_ENABLED }}
+            EOF
 
           # Frontend / Vite env — prefix VITE_ so Vite exposes them to the browser
           cat > .env.local <<'EOF'
-VITE_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
-VITE_GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
-VITE_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-VITE_PGVECTOR_ENABLED=${{ secrets.PGVECTOR_ENABLED }}
-EOF
+            VITE_OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
+            VITE_GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
+            VITE_SUPABASE_URL=${{ secrets.SUPABASE_URL }}
+            VITE_PGVECTOR_ENABLED=${{ secrets.PGVECTOR_ENABLED }}
+            EOF
 
           echo ".env files created:"
           ls -l .env .env.local || true
